@@ -1,0 +1,81 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']          # git tag v1.1 && git push origin v1.1 -> публикация новой версии
+  pull_request:
+  workflow_dispatch:
+
+# Публикации в gh-pages выполняются строго по очереди: иначе два тега,
+# отправленные одновременно, подерутся за ветку gh-pages.
+concurrency:
+  group: docs-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:                              # проверка сборки: для всех веток и PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: pip                  # кэш зависимостей pip
+      - run: pip install -r requirements.txt
+      - run: mkdocs build --strict    # любое предупреждение = ошибка
+
+  publish-version:                    # только для тегов vX.Y
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write                 # нужно, чтобы mike мог сделать push в gh-pages
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0              # mike должен видеть ветку gh-pages
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Настройка git-пользователя для mike
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Публикация версии и перенос алиаса latest
+        run: |
+          mike deploy --push --update-aliases "$GITHUB_REF_NAME" latest
+          mike set-default --push latest
+
+  deploy-helios:                      # копия сайта на Helios
+    if: startsWith(github.ref, 'refs/tags/v') && vars.HELIOS_ENABLED == 'true'
+    needs: publish-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages               # готовый многоверсионный сайт
+      - name: Подготовка SSH (ключ и known_hosts из секретов)
+        env:
+          HELIOS_KEY: ${{ secrets.HELIOS_DEPLOY_KEY }}
+          HELIOS_KNOWN_HOSTS: ${{ secrets.HELIOS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$HELIOS_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$HELIOS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: rsync на Helios
+        env:
+          H_USER: ${{ vars.HELIOS_USER }}
+          H_HOST: ${{ vars.HELIOS_HOST }}
+          H_PORT: ${{ vars.HELIOS_PORT }}
+          H_PATH: ${{ vars.HELIOS_PATH }}   # отдельный каталог только под сайт: --delete чистит его
+        run: |
+          rsync -az --delete --exclude='.git' \
+            -e "ssh -i ~/.ssh/id_deploy -p $H_PORT -o StrictHostKeyChecking=yes" \
+            ./ "$H_USER@$H_HOST:$H_PATH/"

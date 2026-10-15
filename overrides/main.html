@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{# Метатеги для индексации: Highwire Press (Google Scholar) и Dublin Core #}
+{% block extrahead %}
+  {% if page and page.title %}
+  <meta name="citation_title" content="{{ page.title }} — {{ config.site_name }}">
+  <meta name="citation_author" content="{{ config.site_author }}">
+  <meta name="citation_publication_date" content="2026/10/12">
+  {% if page.canonical_url %}
+  <meta name="citation_public_url" content="{{ page.canonical_url }}">
+  {% endif %}
+  <meta name="DC.title" content="{{ page.title }} — {{ config.site_name }}">
+  <meta name="DC.creator" content="{{ config.site_author }}">
+  <meta name="DC.language" content="ru">
+  <meta name="DC.rights" content="CC BY 4.0">
+  {% endif %}
+  {{ super() }}
+{% endblock %}

@@ -1,0 +1,39 @@
+site_name: Результаты эксперимента
+site_description: Учебный проект — публикация результатов эксперимента с версионированием
+site_author: Кадушкина Екатерина, Клюева Алёна
+site_url: https://Katrin-Kad.github.io/ssg-research/
+repo_url: https://github.com/Katrin-Kad/ssg-research
+copyright: Текст и результаты — CC BY 4.0, код — MIT
+
+theme:
+  name: material
+  language: ru
+  font: false              # не грузить Google Fonts: сайт не зависит от внешних CDN
+  custom_dir: overrides    # здесь лежит main.html с метатегами для Google Scholar
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.footer
+
+plugins:
+  - search:
+      lang: [ru, en]       # стемминг для русского и английского
+
+extra:
+  version:
+    provider: mike         # переключатель версий в шапке
+    default: latest
+
+markdown_extensions:
+  - tables
+  - footnotes
+  - attr_list
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - Главная: index.md
+  - Данные: data.md
+  - Методика: method.md
+  - Результаты: results.md

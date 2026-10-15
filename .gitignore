@@ -1,0 +1,10 @@
+.venv/
+venv/
+site/
+_build/
+__pycache__/
+*.pyc
+.cache/
+.DS_Store
+helios_deploy
+helios_deploy.pub

@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "Если вы используете эти результаты, пожалуйста, цитируйте их так."
+title: "Результаты эксперимента: время отклика сервиса при разной нагрузке"
+version: "1.1"
+date-released: "2026-10-12"
+authors:
+  - family-names: "Кадушкина"
+    given-names: "Екатерина"
+  - family-names: "Клюева"
+    given-names: "Алёна"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+license: CC-BY-4.0
+repository-code: "https://github.com/Katrin-Kad/ssg-research"
+url: "https://Katrin-Kad.github.io/ssg-research/"
