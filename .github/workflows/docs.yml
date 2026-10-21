@@ -76,6 +76,6 @@ jobs:
           H_PORT: ${{ vars.HELIOS_PORT }}
           H_PATH: ${{ vars.HELIOS_PATH }}   # отдельный каталог только под сайт: --delete чистит его
         run: |
-          rsync -az --delete --exclude='.git' \
+          rsync -az --delete --chmod=D755,F644 --exclude='.git' \
             -e "ssh -i ~/.ssh/id_deploy -p $H_PORT -o StrictHostKeyChecking=yes" \
             ./ "$H_USER@$H_HOST:$H_PATH/"
